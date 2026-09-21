@@ -1,0 +1,26 @@
+{
+  "name": "expensetracker",
+  "version": "1.0.0",
+  "description": "I study fullstack through a project Expense Tracker. And i will share it for everyone. I hope that it is useful for you. ## Lesson 1: Javascript",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2",
+    "vitest": "^5.0.1"
+  }
+}
