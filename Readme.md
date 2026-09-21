@@ -78,4 +78,81 @@ Data <-- Repository <-- Service <-- **Controller** --`HTTP response`-> React
         description: Success
 ```
 - Express route -> JSDoc annotation to describe route -> swagger-jsdoc creates openapi json -> swageer UI to display and allow "Try it out"
+### 8. Three concepts are strongly connected
+#### Middle ware
+- Middle ware is a function that runs between the incoming request and the final controller.
+- Use middleware for things like: validation, authentication, logging, rate limiting, parsing json file.
+- `Next();`
+#### Centralized error handling
+- Instead of writing error responses everywhere, you send error to one common error handler.
+- Custom error:
+```javascript
+export class AppError extends Error{
+  constructor(message, statusCode){
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+```
+- Service:
+```javascript
+if(!transaction){
+  throw new AppError("Transaction not found", 400);
+}
+```
+- Error middleware:
+```javascript
+export function errorHandler(err, req, res, next){
+  const statusCode = error.statusCode || 500;
+  res.status(statusCode).json({
+    message: error.message || "internal services error"
+  });
+}
+```
+- Flow: Controller / service throws error --> express receives error --> errorHandler --> consistent JSON respense
+#### Async handler
+- Async controller can fail because of `await repository.findAll();` => database or file access may reject a Promise
+- This repeats `try/catch` everywhere
+- An async handler wraps the controller:
+```javascript
+export fuction asyncHandler(fn){
+  return function(req, res, next){
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+}
+```
+- Then controller becomes:
+```javascript
+export function gerTransactions = asyncHandler(
+  async (req, res) => {
+    const data = await service.getAll();
 
+    res.json(data);
+  }
+);
+```
+
+- Summary:
+  - Middleware: intercept / process request
+  - Async handler: forward async errors
+  - Centralized error handler = format errors in one place
+
+```javascript
+Request
+  ↓
+Middleware
+  ↓
+Controller wrapped by asyncHandler
+  ↓
+Service
+  ↓
+Error?
+  ├─ No → Response
+  └─ Yes
+       ↓
+     next(error)
+       ↓
+   errorHandler
+       ↓
+   Error Response
+```
